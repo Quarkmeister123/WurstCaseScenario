@@ -1,41 +1,36 @@
 export default async function handler(req, res) {
-  // CORS erlauben (für lokale Tests / andere Origins, MVP-freundlich)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const url = process.env.MAKE_OPENAI_WEBHOOK_URL; // in Vercel als ENV setzen!
-    if (!url) return res.status(500).json({ error: 'Missing webhook URL' });
-
-    // Optional: einfache Payload-Validierung
-    const body = req.body && typeof req.body === 'object' ? req.body : {};
-    // Optional: Rate-Limit, Origin-Check etc.
-
-    const makeRes = await fetch(url, {
+    const upstream = await fetch(process.env.MAKE_OPENAI_WEBHOOK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' /*, 'Authorization': `Bearer ${process.env.MY_SECRET}`*/ },
-      body: JSON.stringify(body)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body || {})
     });
 
-    const text = await makeRes.text();
-    // Versuche JSON zurückzugeben, sonst Plaintext
-    try {
-      const json = JSON.parse(text);
-      return res.status(makeRes.status).json(json);
-    } catch {
-      return res.status(makeRes.status).send(text);
+    const text = await upstream.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+    // WICHTIG: Status durchreichen (inkl. 429) – aber IMMER JSON liefern
+    if (!upstream.ok) {
+      // Optional: Retry-After weitergeben, falls vorhanden
+      const ra = upstream.headers.get('retry-after');
+      if (ra) res.setHeader('Retry-After', ra);
+      return res.status(upstream.status).json({
+        error: 'upstream_error',
+        status: upstream.status,
+        details: data
+      });
     }
+    return res.status(200).json(data);
   } catch (e) {
     console.error(e);
-    return res.status(502).json({ error: 'Upstream error' });
+    return res.status(502).json({ error: 'gateway_error' });
   }
 }

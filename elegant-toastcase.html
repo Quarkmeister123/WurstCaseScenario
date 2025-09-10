@@ -895,34 +895,48 @@
             const btn = document.getElementById('evaluateBtn');
             const text = document.getElementById('evaluateText');
             const spinner = document.getElementById('evaluateSpinner');
-            btn.disabled = true; text.textContent = 'Wird bewertet...'; spinner.style.display = 'block';
+            btn.disabled = true; text.textContent = 'Wird bewertet…'; spinner.style.display = 'block';
 
             try {
-                const response = await fetch(MAKE_OPENAI_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'openai',
-                        caseId,
-                        solutionText,
-                        idealSolution: cases[caseId].idealSolution,
-                        pointsSchema: cases[caseId].pointsSchema
-                    })
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = {
+              type: 'openai',
+              caseId,
+              solutionText,
+              idealSolution: cases[caseId].idealSolution,
+              pointsSchema: cases[caseId].pointsSchema
+            };
 
-                const result = await response.json();
-                localStorage.setItem('lastEvaluation', Date.now().toString());
-                lastEvaluation = result;
-                displayResult(result, caseId);
-                toast('Bewertung erfolgreich abgeschlossen!', 'success');
-                setTimeout(openFeedbackOverlay, 2000);
-            } catch (error) {
-                console.error('Evaluation error:', error);
-                toast('Fehler bei der Bewertung. Bitte versuche es später erneut.', 'error');
-            } finally {
-                btn.disabled = false; text.textContent = '📊 Bewerten'; spinner.style.display = 'none';
+            const { ok, status, data } = await postJson(MAKE_OPENAI_WEBHOOK_URL, payload);
+
+            if (!ok) {
+              if (status === 429) {
+                toast('Rate-Limit erreicht. Bitte kurz warten und erneut versuchen.', 'error');
+              } else {
+                toast(`Fehler ${status}: Bewertung nicht möglich.`, 'error');
+                console.warn('Evaluate error payload:', data);
+              }
+              return;
             }
+
+            // Optional: Schema-Check, damit displayResult nicht crasht
+            if (!data || !data.subscores || !data.summary || typeof data.totalScore === 'undefined') {
+              toast('Unerwartetes Antwortformat – siehe Konsole.', 'error');
+              console.warn('Unexpected response shape:', data);
+              return;
+            }
+
+            localStorage.setItem('lastEvaluation', Date.now().toString());
+            lastEvaluation = data;
+            displayResult(data, caseId);
+            toast('Bewertung erfolgreich!', 'success');
+            setTimeout(openFeedbackOverlay, 2000);
+
+          } catch (err) {
+            console.error('Evaluation error:', err);
+            toast('Netzwerkfehler. Bitte später erneut versuchen.', 'error');
+          } finally {
+            btn.disabled = false; text.textContent = '📊 Bewerten'; spinner.style.display = 'none';
+          }
         }
 
         function displayResult(result, caseId) {
