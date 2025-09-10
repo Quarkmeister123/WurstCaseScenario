@@ -893,47 +893,49 @@
             const btn = document.getElementById('evaluateBtn');
             const text = document.getElementById('evaluateText');
             const spinner = document.getElementById('evaluateSpinner');
-            btn.disabled = true; text.textContent = 'Wird bewertet…'; spinner.style.display = 'block';
+            btn.disabled = true; text.textContent = 'Wird bewertet...'; spinner.style.display = 'block';
 
             try {
-              const payload = {
-                type: 'openai',
-                caseId,
-                solutionText,
-                idealSolution: cases[caseId].idealSolution,
-                pointsSchema: cases[caseId].pointsSchema
-              };
+            const payload = {
+              type: 'openai',
+              caseId,
+              solutionText,
+              idealSolution: cases[caseId].idealSolution,
+              pointsSchema: cases[caseId].pointsSchema
+            };
 
-              const { ok, status, data } = await postJson(MAKE_OPENAI_WEBHOOK_URL, payload);
+            const { ok, status, data } = await postJson(MAKE_OPENAI_WEBHOOK_URL, payload);
 
-              if (!ok) {
-                if (status === 429) {
-                  toast('Rate-Limit erreicht. Bitte kurz warten.', 'error');
-                } else {
-                  toast(`Fehler ${status}`, 'error');
-                  console.warn('Antwort:', data);
-                }
-                return;
+            if (!ok) {
+              if (status === 429) {
+                toast('Rate-Limit erreicht. Bitte kurz warten und erneut versuchen.', 'error');
+              } else {
+                toast(`Fehler ${status}: Bewertung nicht möglich.`, 'error');
+                console.warn('Evaluate error payload:', data);
               }
-
-              // Schema prüfen, bevor du es anzeigst
-              if (!data || !data.subscores || !data.summary || typeof data.totalScore === 'undefined') {
-                toast('Antwort hat unerwartetes Format.', 'error');
-                console.warn('Unexpected shape:', data);
-                return;
-              }
-
-              lastEvaluation = data;
-              displayResult(data, caseId);
-              toast('Bewertung erfolgreich!', 'success');
-
-            } catch (err) {
-              console.error('Evaluation error:', err);
-              toast('Netzwerkfehler – bitte später erneut versuchen.', 'error');
-            } finally {
-              btn.disabled = false; text.textContent = '📊 Bewerten'; spinner.style.display = 'none';
+              return;
             }
+
+            // Optional: Schema-Check, damit displayResult nicht crasht
+            if (!data || !data.subscores || !data.summary || typeof data.totalScore === 'undefined') {
+              toast('Unerwartetes Antwortformat – siehe Konsole.', 'error');
+              console.warn('Unexpected response shape:', data);
+              return;
+            }
+
+            localStorage.setItem('lastEvaluation', Date.now().toString());
+            lastEvaluation = data;
+            displayResult(data, caseId);
+            toast('Bewertung erfolgreich!', 'success');
+            setTimeout(openFeedbackOverlay, 2000);
+
+          } catch (err) {
+            console.error('Evaluation error:', err);
+            toast('Netzwerkfehler. Bitte später erneut versuchen.', 'error');
+          } finally {
+            btn.disabled = false; text.textContent = '📊 Bewerten'; spinner.style.display = 'none';
           }
+        }
 
 
         function displayResult(result, caseId) {
