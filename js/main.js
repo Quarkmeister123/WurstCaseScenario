@@ -201,14 +201,56 @@ async function evaluateSolution() {
         displayResult(data, caseId);
         toast('Bewertung erfolgreich!', 'success');
         
-        // ENTFERNT: setTimeout(openFeedbackOverlay, 30000);
-        // Das Feedback-Overlay wird nur noch manuell über den Button geöffnet
+        // Sicher den Feedback-Timer setzen
+        scheduleFeedbackPrompt();
 
     } catch (err) {
         toast('Netzwerkfehler. Bitte später erneut versuchen.', 'error');
     } finally {
         btn.disabled = false; text.textContent = '📊 Bewerten'; spinner.style.display = 'none';
     }
+}
+
+// Global variable für Timer-Management
+let feedbackTimer = null;
+
+function scheduleFeedbackPrompt() {
+    // Bestehenden Timer löschen falls vorhanden
+    if (feedbackTimer) {
+        clearTimeout(feedbackTimer);
+        feedbackTimer = null;
+    }
+    
+    // Neuen Timer setzen - nur wenn noch keine Bewertung existiert
+    feedbackTimer = setTimeout(() => {
+        // Prüfen ob das Feedback-Overlay bereits offen ist
+        const overlay = document.getElementById('feedbackOverlay');
+        if (overlay && overlay.style.display === 'flex') {
+            return; // Bereits offen, nichts tun
+        }
+        
+        // Prüfen ob überhaupt eine Bewertung vorhanden ist
+        if (lastEvaluation) {
+            console.log('Auto-opening feedback overlay after 30 seconds');
+            openFeedbackOverlay();
+        }
+        
+        feedbackTimer = null; // Timer zurücksetzen
+    }, 30000);
+    
+    console.log('Feedback timer scheduled for 30 seconds');
+}
+
+// Timer löschen wenn Feedback manuell geöffnet wird
+function openFeedbackOverlay() {
+    // Bestehenden Timer löschen da Overlay jetzt manuell geöffnet wird
+    if (feedbackTimer) {
+        clearTimeout(feedbackTimer);
+        feedbackTimer = null;
+        console.log('Feedback timer cancelled - overlay opened manually');
+    }
+    
+    document.getElementById('feedbackOverlay').style.display = 'flex';
 }
 
 function displayResult(result, caseId) {
@@ -275,13 +317,15 @@ function openFeedbackOverlay() {
     document.getElementById('feedbackOverlay').style.display = 'flex';
 }
 
+// Aktualisierte closeFeedbackOverlay Funktion
 function closeFeedbackOverlay() {
-    console.log('closeFeedbackOverlay called');
     const overlay = document.getElementById('feedbackOverlay');
     if (overlay && overlay.style.display !== 'none') {
         overlay.style.display = 'none';
         resetFeedbackForm();
-        console.log('Overlay closed');
+        
+        // Nach dem Schließen einen neuen Timer setzen (falls gewünscht)
+        // scheduleFeedbackPrompt(); // Auskommentiert - normalerweise nur einmal nach Bewertung
     }
 }
 
