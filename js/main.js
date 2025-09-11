@@ -268,14 +268,17 @@ function displayResult(result, caseId) {
     }
 }
 
-// Feedback overlay functions
-function openFeedbackOverlay() {
-    document.getElementById('feedbackOverlay').style.display = 'flex';
-}
+// Verbesserte closeFeedbackOverlay Funktion
 function closeFeedbackOverlay() {
-    document.getElementById('feedbackOverlay').style.display = 'none';
-    resetFeedbackForm();
+    console.log('closeFeedbackOverlay called');
+    const overlay = document.getElementById('feedbackOverlay');
+    if (overlay && overlay.style.display !== 'none') {
+        overlay.style.display = 'none';
+        resetFeedbackForm();
+        console.log('Overlay closed');
+    }
 }
+
 function resetFeedbackForm() {
     console.log('resetFeedbackForm called');
     try {
