@@ -100,12 +100,26 @@ document.getElementById('caseSelect').addEventListener('change', function () {
     }
 });
 
-// Text counter
+// Text counter & Button-Enable-Logic
 document.getElementById('solutionText').addEventListener('input', function () {
     const text = this.value;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const chars = text.length;
     document.getElementById('textCounter').textContent = `${words} Wörter, ${chars} Zeichen`;
+
+    // Button erst ab 50 Wörter und 100 Zeichen aktivieren
+    const evaluateBtn = document.getElementById('evaluateBtn');
+    if (words >= 50 && chars >= 100) {
+        evaluateBtn.disabled = false;
+    } else {
+        evaluateBtn.disabled = true;
+    }
+});
+
+// Beim Laden: Button deaktivieren
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('evaluateBtn').disabled = true;
+    document.getElementById('solutionText').dispatchEvent(new Event('input'));
 });
 
 // File upload
