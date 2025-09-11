@@ -277,9 +277,35 @@ function closeFeedbackOverlay() {
     resetFeedbackForm();
 }
 function resetFeedbackForm() {
-    document.querySelectorAll('.rating-btn.active').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('feedbackComment').value = '';
+    console.log('resetFeedbackForm called');
+    try {
+        document.querySelectorAll('.rating-btn.active').forEach(btn => btn.classList.remove('active'));
+        
+        // Alle Textfelder zurücksetzen
+        ['feedbackGood', 'feedbackBad', 'feedbackFeatures', 'feedbackGeneral', 'feedbackEmail'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.value = '';
+        });
+        
+        // Email-Gruppe verstecken
+        const emailGroup = document.getElementById('emailGroup');
+        if (emailGroup) emailGroup.style.display = 'none';
+        
+        // Button-State zurücksetzen
+        const btn = document.querySelector('#feedbackOverlay button[type="submit"]');
+        const text = document.getElementById('feedbackSubmitText');
+        const spinner = document.getElementById('feedbackSpinner');
+        
+        if (btn) btn.disabled = false;
+        if (text) text.textContent = 'Feedback senden';
+        if (spinner) spinner.style.display = 'none';
+        
+        console.log('Form reset complete');
+    } catch (error) {
+        console.error('Error resetting form:', error);
+    }
 }
+
 function selectHelpful(helpful) {
     document.querySelectorAll('.rating-btn[data-helpful]').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.rating-btn[data-helpful="${helpful}"]`).classList.add('active');
