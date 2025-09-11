@@ -320,15 +320,16 @@ async function submitFeedback(event) {
         if (ok) {
             toast('Feedback gesendet. Danke!', 'success');
             closeFeedbackOverlay();
-            // Nach dem Schließen keine weitere Ausführung!
+            // Button bleibt deaktiviert, keine weitere Ausführung!
             return;
         } else {
+            // Button wieder aktivieren NUR bei Fehler
+            btn.disabled = false; text.textContent = 'Feedback senden'; spinner.style.display = 'none';
             toast('Feedback konnte nicht gesendet werden.', 'error');
         }
     } catch (err) {
-        toast('Netzwerkfehler beim Feedback.', 'error');
-    } finally {
         btn.disabled = false; text.textContent = 'Feedback senden'; spinner.style.display = 'none';
+        toast('Netzwerkfehler beim Feedback.', 'error');
     }
 }
 
