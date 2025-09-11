@@ -18,7 +18,7 @@ M ist einverstanden, übergibt den Hund an P und nimmt von dieser einen 200-Euro
 
 Fallfrage 1
 Kann M von P die Zahlung von weiteren 100 € verlangen?`,
-        image: "img\Fall_A.png", // Add image path if available, e.g. "images/fallA.jpg"
+        image: "img/Fall_A.png", // Add image path if available, e.g. "images/fallA.jpg"
         pointsSchema: { structure: 10, subsumption: 10, norms: 10, argumentation: 10 }
     },
     B: {
@@ -27,7 +27,7 @@ Kann M von P die Zahlung von weiteren 100 € verlangen?`,
 
 Fallfrage:
 Kann R von V die Bezahlung der Flasche Champagner verlangen, und wenn ja, in welcher Höhe?`,
-        image: "img\Fall_B.png", // Add image path if available, e.g. "images/fallB.jpg"
+        image: "img/Fall_B.png", // Add image path if available, e.g. "images/fallB.jpg"
         pointsSchema: { structure: 10, subsumption: 10, norms: 10, argumentation: 10 }
     }
 };
