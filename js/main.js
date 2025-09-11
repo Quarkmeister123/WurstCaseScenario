@@ -2,12 +2,32 @@
 const MAKE_OPENAI_WEBHOOK_URL = "/api/evaluate";
 const MAKE_FEEDBACK_WEBHOOK_URL = "/api/feedback";
 
-// Cases Data (example, extend as needed)
+// Cases Data (detailed)
 const cases = {
     A: {
+        title: "Fall A: Ein heißer Hund",
+        facts: `Die elfjährige Marie (M), die älter aussieht, ist des täglichen Spazierengehens mit dem Familienhund Henry überdrüssig. Daher sagt M kurzentschlossen und eigenmächtig zu der ihr unbekannten Passantin Patricia (P):
+
+„Für 300 € gehört Henry Dir.“
+
+P antwortet:
+
+„Gerne. Ich habe aber nur 200 € dabei; den Rest gebe ich Dir in einer Woche.”
+
+M ist einverstanden, übergibt den Hund an P und nimmt von dieser einen 200-Euro-Schein entgegen. Später am Tag wird P klar, dass ein Vertrag mit M aufgrund deren Alters rechtlich problematisch sein könnte. Daher sucht sie die Eltern der M auf und bittet sie um deren „OK“. Die Eltern äußern sich nicht. Gleich am nächsten Tag ist P so genervt von dem ständigen Bellen des Henry, dass sie gegenüber M erklärt, dass „sie sich hiermit nun doch vom Vertrag zurückziehe und M den Hund wieder haben könne; außerdem könne sie den Kauf nicht gelten lassen, weil sie M für älter gehalten habe“.
+
+Fallfrage 1
+Kann M von P die Zahlung von weiteren 100 € verlangen?`,
+        image: "img\Fall_A.png", // Add image path if available, e.g. "images/fallA.jpg"
         pointsSchema: { structure: 10, subsumption: 10, norms: 10, argumentation: 10 }
     },
     B: {
+        title: "Fall B: Ein teurer Tropfen",
+        facts: `Ms Eltern feiern mit Freunden im Restaurant des Raffaello (R). Um gebührend anstoßen zu können, möchte der Vater Valentin (V) einen „edlen Tropfen Champagner“ bestellen. Der bei R angestellte Kellner Kurt (K) zeigt V daraufhin eine Flasche und nennt einen Preis i.H.v. 1.300 € (objektiver Wert der Flasche: 1.000 €). Obwohl K einen ruhigen Moment abwartet und, an die Lautstärke angepasst, mit erhobener Stimme spricht, versteht V einen Preis von 300 €, da er von der Partylaune seiner Freunde abgelenkt ist. Begeistert nimmt V dem K die Flasche aus der Hand und öffnet sie fachmännisch mit einem Säbel. Kurz darauf stellt sich heraus, dass K eine veraltete Preisliste herangezogen hatte. K teilt V sogleich mit, dass der zunächst mitgeteilte Preis von 1.300 € falsch sei und daher nicht gelte. Tatsächlich liege der Preis bei 2.000 €. Daraufhin weigert sich V, angesichts des von ihm Gehörten mehr als 300 € zu zahlen; irgendeinen höheren Preis werde er keinesfalls entrichten.
+
+Fallfrage:
+Kann R von V die Bezahlung der Flasche Champagner verlangen, und wenn ja, in welcher Höhe?`,
+        image: "img\Fall_B.png", // Add image path if available, e.g. "images/fallB.jpg"
         pointsSchema: { structure: 10, subsumption: 10, norms: 10, argumentation: 10 }
     }
 };
