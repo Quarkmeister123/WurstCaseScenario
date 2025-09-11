@@ -173,7 +173,7 @@ async function evaluateSolution() {
         lastEvaluation = data;
         displayResult(data, caseId);
         toast('Bewertung erfolgreich!', 'success');
-        setTimeout(openFeedbackOverlay, 2000);
+        setTimeout(openFeedbackOverlay, 6000);
 
     } catch (err) {
         toast('Netzwerkfehler. Bitte später erneut versuchen.', 'error');
