@@ -270,7 +270,11 @@ function displayResult(result, caseId) {
     }
 }
 
-// Verbesserte closeFeedbackOverlay Funktion
+// Feedback overlay functions
+function openFeedbackOverlay() {
+    document.getElementById('feedbackOverlay').style.display = 'flex';
+}
+
 function closeFeedbackOverlay() {
     console.log('closeFeedbackOverlay called');
     const overlay = document.getElementById('feedbackOverlay');
