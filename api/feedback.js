@@ -10,10 +10,47 @@ export default async function handler(req, res) {
     const url = process.env.MAKE_FEEDBACK_WEBHOOK_URL;
     if (!url) return res.status(500).json({ error: 'Missing webhook URL' });
 
+    // Felder aus dem Request-Body extrahieren
+    const {
+      helpful,
+      good,
+      bad,
+      features,
+      general,
+      likelihood,
+      subscription,
+      consent,
+      email
+    } = req.body || {};
+
+    // Optional: Validierung (z.B. Pflichtfelder)
+    if (
+      typeof helpful === 'undefined' ||
+      typeof likelihood === 'undefined' ||
+      typeof subscription === 'undefined' ||
+      typeof consent === 'undefined'
+    ) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Payload für den Webhook bauen
+    const payload = {
+      helpful,
+      good,
+      bad,
+      features,
+      general,
+      likelihood,
+      subscription,
+      consent,
+      email: consent === true || consent === 'yes' ? email : ''
+    };
+
+    // An den Webhook weiterleiten
     const makeRes = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body || {})
+      body: JSON.stringify(payload)
     });
 
     const text = await makeRes.text();
