@@ -39,19 +39,46 @@ let feedbackData = null;
 // Toast System
 let toastCount = 0;
 const maxToasts = 3;
+const recentToasts = new Set();
+
 function toast(message, type = 'info') {
+    // Deduplizierung: gleiche Nachricht innerhalb von 2 Sekunden ignorieren
+    const toastKey = `${message}:${type}`;
+    if (recentToasts.has(toastKey)) {
+        return;
+    }
+    
+    recentToasts.add(toastKey);
+    setTimeout(() => recentToasts.delete(toastKey), 2000);
+    
     const container = document.getElementById('toastContainer');
     const toasts = container.children;
-    if (toasts.length >= maxToasts) { container.removeChild(toasts[0]); toastCount--; }
+    
+    if (toasts.length >= maxToasts) { 
+        container.removeChild(toasts[0]); 
+        toastCount--; 
+    }
+    
     const toastEl = document.createElement('div');
     toastEl.className = `toast toast-${type}`;
     const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    
     toastEl.innerHTML = `
         <span class="toast-icon">${icons[type] || ''}</span>
         <span class="toast-content">${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove(); toastCount--;">×</button>`;
-    container.appendChild(toastEl); toastCount++;
-    setTimeout(() => { if (toastEl.parentElement) { toastEl.remove(); toastCount--; } }, 5000);
+        <button class="toast-close" onclick="this.parentElement.remove(); toastCount--;">×</button>
+    `;
+    
+    container.appendChild(toastEl); 
+    toastCount++;
+    
+    // Auto-remove nach 5 Sekunden
+    setTimeout(() => { 
+        if (toastEl.parentElement) { 
+            toastEl.remove(); 
+            toastCount--; 
+        } 
+    }, 5000);
 }
 
 // Rate limiting
@@ -282,6 +309,7 @@ function selectConsent(consent) {
 
 async function submitFeedback(event) {
     event.preventDefault();
+    
     const helpful = document.querySelector('.rating-btn[data-helpful].active');
     const likelihood = document.querySelector('.rating-btn[data-likelihood].active');
     const subscription = document.querySelector('.rating-btn[data-subscription].active');
@@ -313,22 +341,29 @@ async function submitFeedback(event) {
     const btn = event.target.querySelector('button[type="submit"]');
     const text = document.getElementById('feedbackSubmitText');
     const spinner = document.getElementById('feedbackSpinner');
-    btn.disabled = true; text.textContent = 'Wird gesendet...'; spinner.style.display = 'block';
+    
+    // Button deaktivieren und Loading-State setzen
+    btn.disabled = true;
+    text.textContent = 'Wird gesendet...';
+    spinner.style.display = 'block';
 
     try {
         const { ok } = await postJson('/api/feedback', payload);
+        
         if (ok) {
             toast('Feedback gesendet. Danke!', 'success');
             closeFeedbackOverlay();
-            // KEIN Button-Reset und KEIN finally mehr!
-            return;
         } else {
-            btn.disabled = false; text.textContent = 'Feedback senden'; spinner.style.display = 'none';
             toast('Feedback konnte nicht gesendet werden.', 'error');
         }
     } catch (err) {
-        btn.disabled = false; text.textContent = 'Feedback senden'; spinner.style.display = 'none';
+        console.error('Feedback submission error:', err);
         toast('Netzwerkfehler beim Feedback.', 'error');
+    } finally {
+        // Button-State in allen Fällen zurücksetzen
+        btn.disabled = false;
+        text.textContent = 'Feedback senden';
+        spinner.style.display = 'none';
     }
 }
 
