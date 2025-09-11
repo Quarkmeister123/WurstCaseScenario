@@ -288,13 +288,11 @@ async function submitFeedback(event) {
     const consent = document.querySelector('.rating-btn[data-consent].active');
     const email = document.getElementById('feedbackEmail').value.trim();
 
-    // Pflichtfelder prüfen
     if (!helpful || !likelihood || !subscription || !consent) {
         toast('Bitte alle Pflichtfelder ausfüllen.', 'error');
         return;
     }
 
-    // Feedback-Felder einsammeln
     const payload = {
         helpful: helpful.getAttribute('data-helpful'),
         good: document.getElementById('feedbackGood').value.trim(),
@@ -307,7 +305,6 @@ async function submitFeedback(event) {
         email: consent.getAttribute('data-consent') === 'yes' ? email : ''
     };
 
-    // Optional: E-Mail validieren, wenn consent = yes
     if (payload.consent && email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         toast('Bitte eine gültige E-Mail-Adresse eingeben.', 'error');
         return;
@@ -323,6 +320,8 @@ async function submitFeedback(event) {
         if (ok) {
             toast('Feedback gesendet. Danke!', 'success');
             closeFeedbackOverlay();
+            // Nach dem Schließen keine weitere Ausführung!
+            return;
         } else {
             toast('Feedback konnte nicht gesendet werden.', 'error');
         }
