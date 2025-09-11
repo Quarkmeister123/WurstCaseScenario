@@ -200,7 +200,9 @@ async function evaluateSolution() {
         lastEvaluation = data;
         displayResult(data, caseId);
         toast('Bewertung erfolgreich!', 'success');
-        setTimeout(openFeedbackOverlay, 30000);
+        
+        // ENTFERNT: setTimeout(openFeedbackOverlay, 30000);
+        // Das Feedback-Overlay wird nur noch manuell über den Button geöffnet
 
     } catch (err) {
         toast('Netzwerkfehler. Bitte später erneut versuchen.', 'error');
