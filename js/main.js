@@ -176,28 +176,55 @@ function displayResult(result, caseId) {
     const feedbackSection = document.getElementById('feedbackSection');
 
     resultCard.style.display = 'block';
+
+    // Gesamtpunktzahl
     totalScore.textContent = `${result.totalScore} / 40`;
     progressFill.style.width = `${(result.totalScore / 40) * 100}%`;
 
     // Subscores
     subscoresDiv.innerHTML = '';
-    for (const [key, value] of Object.entries(result.subscores)) {
-        const item = document.createElement('div');
-        item.className = 'subscore-item';
-        item.innerHTML = `<div class="subscore-value">${value}</div>
-                          <div class="subscore-label">${key}</div>`;
-        subscoresDiv.appendChild(item);
+    if (result.subscores) {
+        for (const [key, value] of Object.entries(result.subscores)) {
+            const item = document.createElement('div');
+            item.className = 'subscore-item';
+            // Deutsche Labels für die Anzeige
+            const labels = {
+                structure: "Struktur",
+                subsumption: "Subsumtion",
+                norms: "Normenkenntnis",
+                argumentation: "Argumentation"
+            };
+            item.innerHTML = `<div class="subscore-value">${value}</div>
+                              <div class="subscore-label">${labels[key] || key}</div>`;
+            subscoresDiv.appendChild(item);
+        }
     }
 
-    // Feedback
+    // Feedback/Summary
     feedbackSection.innerHTML = '';
     if (result.summary) {
-        const item = document.createElement('div');
-        item.className = 'feedback-item';
-        item.innerHTML = `<h4>Zusammenfassung</h4><div>${result.summary}</div>`;
-        feedbackSection.appendChild(item);
+        // Stärken
+        if (result.summary.strengths) {
+            const strengths = document.createElement('div');
+            strengths.className = 'feedback-item';
+            strengths.innerHTML = `<h4>Stärken</h4><div>${result.summary.strengths}</div>`;
+            feedbackSection.appendChild(strengths);
+        }
+        // Schwächen
+        if (result.summary.weaknesses) {
+            const weaknesses = document.createElement('div');
+            weaknesses.className = 'feedback-item';
+            weaknesses.innerHTML = `<h4>Schwächen</h4><div>${result.summary.weaknesses}</div>`;
+            feedbackSection.appendChild(weaknesses);
+        }
+        // Tipp
+        if (result.summary.tip) {
+            const tip = document.createElement('div');
+            tip.className = 'feedback-item';
+            tip.innerHTML = `<h4>Tipp</h4><div>${result.summary.tip}</div>`;
+            feedbackSection.appendChild(tip);
+        }
     }
-    // Add more feedback items as needed
 }
 
 // Feedback overlay functions
