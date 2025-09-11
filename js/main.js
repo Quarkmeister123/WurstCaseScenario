@@ -66,16 +66,33 @@ function canEvaluate() {
 document.getElementById('caseSelect').addEventListener('change', function () {
     const selectedCase = this.value;
     const factsBox = document.getElementById('factsBox');
-    const factsText = document.getElementById('factsText');
-    const caseImage = document.getElementById('caseImage');
+    let factsText = document.getElementById('factsText');
+    let caseImage = document.getElementById('caseImage');
+
+    // Falls die Elemente noch nicht existieren, dynamisch anlegen (für Kompatibilität)
+    if (!factsText) {
+        factsText = document.createElement('div');
+        factsText.id = 'factsText';
+        factsBox.appendChild(factsText);
+    }
+    if (!caseImage) {
+        caseImage = document.createElement('img');
+        caseImage.id = 'caseImage';
+        caseImage.style.maxWidth = "100%";
+        caseImage.style.marginBottom = "15px";
+        caseImage.style.borderRadius = "10px";
+        factsBox.insertBefore(caseImage, factsText);
+    }
 
     if (selectedCase && cases[selectedCase]) {
         factsBox.style.display = 'block';
-        // Example: Set facts and image
-        factsText.textContent = selectedCase === "A"
-            ? "Sachverhalt zu Fall A: Ein heißer Hund ..."
-            : "Sachverhalt zu Fall B: Ein teurer Tropfen ...";
-        caseImage.style.display = 'none'; // Set to 'block' and src if you have images
+        factsText.textContent = cases[selectedCase].facts;
+        if (cases[selectedCase].image && cases[selectedCase].image !== "") {
+            caseImage.src = cases[selectedCase].image;
+            caseImage.style.display = 'block';
+        } else {
+            caseImage.style.display = 'none';
+        }
     } else {
         factsBox.style.display = 'none';
         factsText.textContent = '';
