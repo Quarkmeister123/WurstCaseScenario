@@ -320,10 +320,9 @@ async function submitFeedback(event) {
         if (ok) {
             toast('Feedback gesendet. Danke!', 'success');
             closeFeedbackOverlay();
-            // Button bleibt deaktiviert, keine weitere Ausführung!
+            // KEIN Button-Reset und KEIN finally mehr!
             return;
         } else {
-            // Button wieder aktivieren NUR bei Fehler
             btn.disabled = false; text.textContent = 'Feedback senden'; spinner.style.display = 'none';
             toast('Feedback konnte nicht gesendet werden.', 'error');
         }
