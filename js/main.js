@@ -251,15 +251,51 @@ function selectLikelihood(likelihood) {
     feedbackData = feedbackData || {};
     feedbackData.likelihood = likelihood;
 }
+function selectSubscription(val) {
+    document.querySelectorAll('.rating-btn[data-subscription]').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.rating-btn[data-subscription="${val}"]`).classList.add('active');
+    feedbackData = feedbackData || {};
+    feedbackData.subscription = val;
+}
+function selectConsent(consent) {
+    document.querySelectorAll('.rating-btn[data-consent]').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.rating-btn[data-consent="${consent ? 'yes' : 'no'}"]`).classList.add('active');
+    feedbackData = feedbackData || {};
+    feedbackData.consent = consent;
+    // Zeige das E-Mail Feld nur bei Zustimmung
+    document.getElementById('emailGroup').style.display = consent ? 'block' : 'none';
+}
 
 async function submitFeedback(event) {
     event.preventDefault();
     const helpful = document.querySelector('.rating-btn[data-helpful].active');
     const likelihood = document.querySelector('.rating-btn[data-likelihood].active');
-    const comment = document.getElementById('feedbackComment').value.trim();
+    const subscription = document.querySelector('.rating-btn[data-subscription].active');
+    const consent = document.querySelector('.rating-btn[data-consent].active');
+    const email = document.getElementById('feedbackEmail').value.trim();
 
-    if (!helpful || !likelihood) {
+    // Pflichtfelder prüfen
+    if (!helpful || !likelihood || !subscription || !consent) {
         toast('Bitte alle Pflichtfelder ausfüllen.', 'error');
+        return;
+    }
+
+    // Feedback-Felder einsammeln
+    const payload = {
+        helpful: helpful.getAttribute('data-helpful'),
+        good: document.getElementById('feedbackGood').value.trim(),
+        bad: document.getElementById('feedbackBad').value.trim(),
+        features: document.getElementById('feedbackFeatures').value.trim(),
+        general: document.getElementById('feedbackGeneral').value.trim(),
+        likelihood: likelihood.getAttribute('data-likelihood'),
+        subscription: subscription.getAttribute('data-subscription'),
+        consent: consent.getAttribute('data-consent') === 'yes',
+        email: consent.getAttribute('data-consent') === 'yes' ? email : ''
+    };
+
+    // Optional: E-Mail validieren, wenn consent = yes
+    if (payload.consent && email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast('Bitte eine gültige E-Mail-Adresse eingeben.', 'error');
         return;
     }
 
@@ -269,12 +305,7 @@ async function submitFeedback(event) {
     btn.disabled = true; text.textContent = 'Wird gesendet...'; spinner.style.display = 'block';
 
     try {
-        const payload = {
-            helpful: helpful.getAttribute('data-helpful'),
-            likelihood: likelihood.getAttribute('data-likelihood'),
-            comment
-        };
-        const { ok } = await postJson(MAKE_FEEDBACK_WEBHOOK_URL, payload);
+        const { ok } = await postJson('/api/feedback', payload);
         if (ok) {
             toast('Feedback gesendet. Danke!', 'success');
             closeFeedbackOverlay();
